@@ -21,6 +21,7 @@ from training import training_loop
 from training import dataset
 from metrics import metric_defaults
 os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = "2"
 #----------------------------------------------------------------------------
 
 class UserError(Exception):

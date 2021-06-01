@@ -104,6 +104,7 @@ class Projector:
 
         # Downsample image to 256x256 if it's larger than that. VGG was built for 224x224 images.
         proc_images_expr = (self._images_float_expr + 1) * (255 / 2)
+        proc_images_expr = tf.tile(proc_images_expr, [1, 3, 1, 1]) # gray to RGB
         sh = proc_images_expr.shape.as_list()
         if sh[2] > 256:
             factor = sh[2] // 256
@@ -112,9 +113,12 @@ class Projector:
         # Build loss graph.
         self._info('Building loss graph...')
         self._target_images_var = tf.Variable(tf.zeros(proc_images_expr.shape), name='target_images_var')
+
         if self._lpips is None:
             with dnnlib.util.open_url('https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada/pretrained/metrics/vgg16_zhang_perceptual.pkl') as f:
                 self._lpips = pickle.load(f)
+    
+        print(proc_images_expr)
         self._dist = self._lpips.get_output_for(proc_images_expr, self._target_images_var)
         self._loss = tf.reduce_sum(self._dist)
 
@@ -199,6 +203,7 @@ class Projector:
     @property
     def images_uint8(self):
         return tflib.run(self._images_uint8_expr, {self._dlatent_noise_in: 0})
+
 
 #----------------------------------------------------------------------------
 
